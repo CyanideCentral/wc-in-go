@@ -111,26 +111,27 @@ func countFile(fullpath string) *count {
 	cnt := new(count)
 	b, err := ioutil.ReadFile(fullpath)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	cnt.bytes = len(b)
 	str := fmt.Sprintf("%s", b)
 	cnt.chars = len(str)
+
 	lineArray := strings.Split(str, "\n")
 	cnt.lines = strings.Count(str, "\n")
+	//TODO: tab width = 8- (pos % 8)
 	maxl := 0
 	for _, lstr := range lineArray {
 		if len(lstr) > maxl {
 			maxl = len(lstr)
 		}
 	}
-	cnt.maxlen = maxl
-	//str = strings.Replace(str, "\n", " ", -1)
-	//str = strings.Replace(str, "\t", " ", -1)
-	//str = strings.Replace(str, "\n", " ", -1)
-	words := strings.Split(str, " ")
 
+	cnt.maxlen = maxl
+	//TODO: count by appearance of consecutive letters
+	words := strings.Split(str, " ")
 	cnt.words = sizeNonEmpty(words)
+
 	return cnt
 }
 
@@ -141,6 +142,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//Parse option flags
 	for ; i < len(args); i++ {
 		if args[i][0] == '-' {
 			for j := 1; j < len(args[i]); j++ {
@@ -150,6 +152,7 @@ func main() {
 			break
 		}
 	}
+	//Default options
 	if numParams == 0 {
 		showLines = true
 		showWords = true
