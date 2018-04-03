@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/ryanuber/columnize"
 )
@@ -30,21 +32,22 @@ func (ca *count) toString() (out string) {
 	if ca == nil {
 		ca = new(count)
 	}
-	if showBytes {
-		out += fmt.Sprintf("%v", ca.bytes)
-	}
-	if showChars {
-		out += fmt.Sprintf(" | %v", ca.chars)
-	}
 	if showLines {
 		out += fmt.Sprintf(" | %v", ca.lines)
-	}
-	if showMaxlen {
-		out += fmt.Sprintf(" | %v", ca.maxlen)
 	}
 	if showWords {
 		out += fmt.Sprintf(" | %v", ca.words)
 	}
+	if showBytes {
+		out += fmt.Sprintf(" | %v", ca.bytes)
+	}
+	if showChars {
+		out += fmt.Sprintf(" | %v", ca.chars)
+	}
+	if showMaxlen {
+		out += fmt.Sprintf(" | %v", ca.maxlen)
+	}
+
 	return out
 }
 
@@ -84,9 +87,50 @@ func parseParam(param string) {
 	numParams++
 }
 
+func isLetter(ch rune) bool {
+	if 'a' <= ch && ch <= 'z' {
+		return true
+	}
+	if 'A' <= ch && ch <= 'Z' {
+		return true
+	}
+	return false
+}
+
+func sizeNonEmpty(slist []string) int {
+	num := 0
+	for _, s := range slist {
+		if len(s) > 0 {
+			num++
+		}
+	}
+	return num
+}
+
 func countFile(fullpath string) *count {
 	cnt := new(count)
-	cnt.chars = 200
+	b, err := ioutil.ReadFile(fullpath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cnt.bytes = len(b)
+	str := fmt.Sprintf("%s", b)
+	cnt.chars = len(str)
+	lineArray := strings.Split(str, "\n")
+	cnt.lines = strings.Count(str, "\n")
+	maxl := 0
+	for _, lstr := range lineArray {
+		if len(lstr) > maxl {
+			maxl = len(lstr)
+		}
+	}
+	cnt.maxlen = maxl
+	//str = strings.Replace(str, "\n", " ", -1)
+	//str = strings.Replace(str, "\t", " ", -1)
+	//str = strings.Replace(str, "\n", " ", -1)
+	words := strings.Split(str, " ")
+
+	cnt.words = sizeNonEmpty(words)
 	return cnt
 }
 
